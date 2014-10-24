@@ -1,7 +1,7 @@
 #-- copyright
 # OpenProject Backlogs Plugin
 #
-# Copyright (C)2013-2014 the OpenProject Foundation (OPF)
+# Copyright (C)2013 the OpenProject Foundation (OPF)
 # Copyright (C)2011 Stephan Eckardt, Tim Felgentreff, Marnen Laibow-Koser, Sandro Munda
 # Copyright (C)2010-2011 friflaj
 # Copyright (C)2010 Maxime Guilbot, Andrew Vit, Joakim Kolsjö, ibussieres, Daniel Passos, Jason Vasquez, jpic, Emiliano Heyns
@@ -32,32 +32,16 @@
 #
 # See doc/COPYRIGHT.rdoc for more details.
 #++
+Then /^the sprint "(.+?)" should be displayed to the (right|left)$/ do |sprint_name, orientation|
 
-require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
+  selector = case orientation
+             when "right"
+               "#owner_backlogs_container"
+             when "left"
+               "#sprint_backlogs_container"
+             else
+               raise "Only right and left are supported"
+             end
 
-describe Backlog, :type => :model do
-  let(:project) { FactoryGirl.build(:project) }
-
-  before(:each) do
-    @feature = FactoryGirl.create(:type_feature)
-    allow(Setting).to receive(:plugin_openproject_backlogs).and_return({ "story_types"           => [@feature.id.to_s],
-                                                                         "task_type"             => "0" })
-    @status = FactoryGirl.create(:status)
-  end
-
-  describe "Class Methods" do
-    describe :owner_backlogs do
-      describe "WITH one open version defined in the project" do
-        before(:each) do
-          @project = project
-          @work_packages = [FactoryGirl.create(:work_package, :subject => "work_package1", :project => @project, :type => @feature, :status => @status)]
-          @version = FactoryGirl.create(:version, :project => project, :fixed_issues => @work_packages)
-          @version_settings = @version.version_settings.create(:display => VersionSetting::DISPLAY_RIGHT, :project => project)
-        end
-
-        it { expect(Backlog.owner_backlogs(@project)[0]).to be_owner_backlog }
-      end
-    end
-  end
-
+    step %{I should see "#{sprint_name}" within "#{selector} .name"}
 end

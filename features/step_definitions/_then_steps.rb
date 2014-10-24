@@ -56,7 +56,7 @@ Then /^I should see the burndown chart for sprint "(.+?)"$/ do |sprint|
 end
 
 Then /^I should see the WorkPackages page$/ do
-  page.should have_css("#query_form")
+  page.should have_css(".workpackages-table")
 end
 
 Then /^I should see the taskboard$/ do
@@ -172,20 +172,9 @@ Then /^the sprint named (.+) should have (\d+) impediments? named (.+)$/ do |spr
 end
 
 Then /^the impediment "(.+)" should signal( | un)successful saving$/ do |impediment_subject, negative|
-  negative = !negative.blank?
+  pos_or_neg_should = !negative.blank? ? :should : :should_not
 
-  element = {}
-
-  begin
-    element = page.find(:xpath, "//div[contains(concat(' ',normalize-space(@class),' '),' impediment ') and contains(., '#{impediment_subject}')]")
-    !element[:class].include?('saving') || element[:class].include?('error')
-  end
-
-  if negative
-    element[:class].should be_include('error')
-  else
-    element[:class].should_not be_include('error')
-  end
+  page.send(pos_or_neg_should, have_selector("div.impediment.error", :text => impediment_subject))
 end
 
 Then /^the sprint should be updated accordingly$/ do

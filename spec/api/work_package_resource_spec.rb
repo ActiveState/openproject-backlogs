@@ -33,31 +33,47 @@
 # See doc/COPYRIGHT.rdoc for more details.
 #++
 
-require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
+require 'spec_helper'
+require 'rack/test'
 
-describe Backlog, :type => :model do
-  let(:project) { FactoryGirl.build(:project) }
+describe 'API v3 Work package resource' do
+  include Rack::Test::Methods
+  include Capybara::RSpecMatchers
 
-  before(:each) do
-    @feature = FactoryGirl.create(:type_feature)
-    allow(Setting).to receive(:plugin_openproject_backlogs).and_return({ "story_types"           => [@feature.id.to_s],
-                                                                         "task_type"             => "0" })
-    @status = FactoryGirl.create(:status)
-  end
+  let(:admin) { FactoryGirl.create(:admin) }
+  let(:project) { FactoryGirl.create(:project) }
+  let(:work_package) { FactoryGirl.create(:work_package,
+                                          project: project,
+                                          story_points: 8,
+                                          remaining_hours: 5) }
 
-  describe "Class Methods" do
-    describe :owner_backlogs do
-      describe "WITH one open version defined in the project" do
-        before(:each) do
-          @project = project
-          @work_packages = [FactoryGirl.create(:work_package, :subject => "work_package1", :project => @project, :type => @feature, :status => @status)]
-          @version = FactoryGirl.create(:version, :project => project, :fixed_issues => @work_packages)
-          @version_settings = @version.version_settings.create(:display => VersionSetting::DISPLAY_RIGHT, :project => project)
-        end
-
-        it { expect(Backlog.owner_backlogs(@project)[0]).to be_owner_backlog }
+  describe '#get' do
+    shared_context 'query work package' do
+      before do
+        allow(User).to receive(:current).and_return(admin)
+        get "/api/v3/work_packages/#{work_package.id}"
       end
+
+      subject(:parsed_response) { JSON.parse(last_response.body) }
+    end
+
+    context 'backlogs activated' do
+      include_context 'query work package'
+
+      it { expect(parsed_response['storyPoints']).to eq(work_package.story_points) }
+
+      it { expect(parsed_response['remainingHours']).to eq(work_package.remaining_hours) }
+    end
+
+    context 'backlogs deactivated' do
+      let(:project) { FactoryGirl.create(:project,
+                                         enabled_module_names: []) }
+
+      include_context 'query work package'
+
+      it { expect(parsed_response['storyPoints']).to be_nil }
+
+      it { expect(parsed_response['remainingHours']).to be_nil }
     end
   end
-
 end

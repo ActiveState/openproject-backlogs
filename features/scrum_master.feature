@@ -129,10 +129,8 @@ Feature: Scrum Master
         | Subsubtask   | Sprint 005 | Subfeature | Task       |
     And I am already logged in as "markus"
 
-  @javascript
   Scenario: View stories that have a parent ticket
    Given I am on the master backlog
-    When I open the "Sprint 005" backlogs menu
     Then I should see 2 stories in "Sprint 005"
      And I should not see "Epic 1"
      And I should not see "Task 10"
@@ -298,6 +296,7 @@ Feature: Scrum Master
      And Story D should be in the 2nd position of the sprint named Sprint 005
      And Story E should be the higher item of Story D
 
+  @javascript
   Scenario: View epic, stories, tasks, subtasks in the work_package list
    Given I am on the work_packages index page
     Then I should see "Epic 1" within "#content"

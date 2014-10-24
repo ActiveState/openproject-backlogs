@@ -1,7 +1,7 @@
 #-- copyright
 # OpenProject Backlogs Plugin
 #
-# Copyright (C)2013-2014 the OpenProject Foundation (OPF)
+# Copyright (C)2013 the OpenProject Foundation (OPF)
 # Copyright (C)2011 Stephan Eckardt, Tim Felgentreff, Marnen Laibow-Koser, Sandro Munda
 # Copyright (C)2010-2011 friflaj
 # Copyright (C)2010 Maxime Guilbot, Andrew Vit, Joakim Kolsjö, ibussieres, Daniel Passos, Jason Vasquez, jpic, Emiliano Heyns
@@ -33,31 +33,46 @@
 # See doc/COPYRIGHT.rdoc for more details.
 #++
 
-require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
+Feature: Version Settings
+  As a Project Admin
+  I want to configure the backlogs plugin
+  So that my team and I can work effectively
 
-describe Backlog, :type => :model do
-  let(:project) { FactoryGirl.build(:project) }
+  Background:
+    Given there is 1 project with:
+        | name  | ecookbook |
+    And I am working in project "ecookbook"
+    And the project uses the following modules:
+        | backlogs |
+    And the backlogs module is initialized
+    And there is 1 user with:
+        | login | padme |
+    And there is a role "project admin"
+    And the role "project admin" may have the following rights:
+        | manage_versions     |
+        | view_master_backlog |
+    And the user "padme" is a "project admin"
+    And there is a default status with:
+        | name | new |
+    And the project has the following sprints:
+        | name       | start_date        | effective_date |
+        | Sprint 001 | 2010-01-01        | 2010-01-31     |
+    And I am already logged in as "padme"
 
-  before(:each) do
-    @feature = FactoryGirl.create(:type_feature)
-    allow(Setting).to receive(:plugin_openproject_backlogs).and_return({ "story_types"           => [@feature.id.to_s],
-                                                                         "task_type"             => "0" })
-    @status = FactoryGirl.create(:status)
-  end
+  @javascript
+  Scenario: Moving the backlog via the menu
+   Given I am on the master backlog
 
-  describe "Class Methods" do
-    describe :owner_backlogs do
-      describe "WITH one open version defined in the project" do
-        before(:each) do
-          @project = project
-          @work_packages = [FactoryGirl.create(:work_package, :subject => "work_package1", :project => @project, :type => @feature, :status => @status)]
-          @version = FactoryGirl.create(:version, :project => project, :fixed_issues => @work_packages)
-          @version_settings = @version.version_settings.create(:display => VersionSetting::DISPLAY_RIGHT, :project => project)
-        end
+    When I open the "Sprint 001" backlogs menu
+    When I click on "Properties"
 
-        it { expect(Backlog.owner_backlogs(@project)[0]).to be_owner_backlog }
-      end
-    end
-  end
+   Then I should be on the edit page of the version "Sprint 001"
 
-end
+    When I select "right" from "Column in backlog"
+     And I submit the form by the "Save" button
+
+   Then I should be on the master backlog
+    And the sprint "Sprint 001" should be displayed to the right
+
+
+

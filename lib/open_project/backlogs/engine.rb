@@ -33,8 +33,6 @@
 # See doc/COPYRIGHT.rdoc for more details.
 #++
 
-# Prevent load-order problems in case openproject-plugins is listed after a plugin in the Gemfile
-# or not at all
 require 'open_project/plugins'
 
 require 'acts_as_silent_list'
@@ -55,7 +53,7 @@ module OpenProject::Backlogs
 
     register 'openproject-backlogs',
              :author_url => 'http://finn.de',
-             :requires_openproject => '>= 3.0.8',
+             :requires_openproject => '>= 4.0.0',
              :settings => settings do
 
       Redmine::AccessControl.permission(:edit_project).actions << "projects/project_done_statuses"
@@ -119,12 +117,32 @@ module OpenProject::Backlogs
         :param => :project_id,
         :if => proc { not(User.current.respond_to?(:impaired?) and User.current.impaired?) },
         :html => {:class => 'icon2 icon-backlogs-icon'}
-      end
+    end
 
-    assets %w( backlogs.css backlogs.js master_backlogs.css taskboard.css)
+    assets %w(
+      backlogs/backlogs.css
+      backlogs/backlogs.js
+      backlogs/master_backlog.css
+      backlogs/taskboard.css
+      backlogs/jquery.flot/excanvas.js
+      backlogs/burndown.js
+    )
 
     patches [:PermittedParams, :WorkPackage, :Status, :MyController, :Project,
       :ProjectsController, :ProjectsHelper, :Query, :User, :VersionsController, :Version]
+
+    extend_api_response(:v3, :work_packages, :work_package) do
+      property :story_points, exec_context: :decorator, if: -> (*) { represented.model.backlogs_enabled? }
+      property :remaining_hours, exec_context: :decorator, if: -> (*) { represented.model.backlogs_enabled? }
+
+      send(:define_method, :story_points) do
+        represented.model.story_points
+      end
+
+      send(:define_method, :remaining_hours) do
+        represented.model.remaining_hours
+      end
+    end
 
     config.to_prepare do
       if WorkPackage.const_defined? "SAFE_ATTRIBUTES"

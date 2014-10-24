@@ -52,6 +52,18 @@ module OpenProject::Backlogs::Hooks
       attributes
     end
 
+    def work_packages_overview_attributes(context = {})
+      project = context[:project]
+      attributes = context[:attributes]
+
+      return unless project && project.module_enabled?(:backlogs)
+
+      attributes << :storyPoints
+      attributes << :remainingHours
+
+      attributes
+    end
+
     private
 
     def work_package_show_story_points_attribute(work_package)
@@ -195,17 +207,6 @@ module OpenProject::Backlogs::Hooks
           end
         end
       end
-    end
-
-    # Renders story_points in v1 api#index
-    #
-    # Context:
-    # * :api => Current api instance
-    # * :issue => issue to render
-    #
-    def api_issue_index_attributes(context={})
-      return unless context[:api] && context[:issue]
-      context[:api].story_points context[:issue].story_points
     end
   end
 end

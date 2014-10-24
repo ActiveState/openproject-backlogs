@@ -35,12 +35,12 @@
 
 require 'spec_helper'
 
-describe WorkPackagesController do
+describe WorkPackagesController, :type => :controller do
   before do
-    User.stub(:current).and_return current_user
+    allow(User).to receive(:current).and_return current_user
     # disables sending mails
-    UserMailer.stub(:new).and_return(double('mailer').as_null_object)
-    Setting.stub(:plugin_openproject_backlogs).and_return({"points_burn_direction" => "down",
+    allow(UserMailer).to receive(:new).and_return(double('mailer').as_null_object)
+    allow(Setting).to receive(:plugin_openproject_backlogs).and_return({"points_burn_direction" => "down",
                                                               "wiki_template"         => "",
                                                               "card_spec"             => "Sattleford VM-5040",
                                                               "story_types"           => [story_type.id.to_s],
@@ -72,16 +72,16 @@ describe WorkPackagesController do
 
     subject { response }
 
-    it { should be_success }
+    it { is_expected.to be_success }
 
-    it { should render_template('work_packages/show', formats: ['html']) }
+    it { is_expected.to render_template('work_packages/show', formats: ['html']) }
 
     context 'view' do
       render_views
 
       subject { response.body }
 
-      it { should have_selector('table.attributes td.work_package_attribute_header + td.story-points', text: story_points.to_s) }
+      it { is_expected.to have_selector('table.attributes td.work_package_attribute_header + td.story-points', text: story_points.to_s) }
     end
   end
 
@@ -93,7 +93,7 @@ describe WorkPackagesController do
 
       subject { response }
 
-      it { assigns["new_work_package"].children(true).should be_empty }
+      it { expect(assigns["new_work_package"].children(true)).to be_empty }
     end
 
     describe do 'copying no tasks'
@@ -104,8 +104,8 @@ describe WorkPackagesController do
       subject { response }
 
       it do
-        assigns["new_work_package"].children(true).should_not be_empty
-        assigns["new_work_package"].children(true).count.should == 1
+        expect(assigns["new_work_package"].children(true)).not_to be_empty
+        expect(assigns["new_work_package"].children(true).count).to eq(1)
       end
     end
 
@@ -117,8 +117,8 @@ describe WorkPackagesController do
       subject { response }
 
       it do
-        assigns["new_work_package"].children(true).should_not be_empty
-        assigns["new_work_package"].children(true).count.should == 2
+        expect(assigns["new_work_package"].children(true)).not_to be_empty
+        expect(assigns["new_work_package"].children(true).count).to eq(2)
       end
     end
   end
