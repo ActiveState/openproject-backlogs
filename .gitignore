@@ -4,3 +4,7 @@ _posts
 assets/styles
 graph.dot
 *.swp
+node_modules
+
+# JetBrains ignore
+.idea

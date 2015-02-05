@@ -34,8 +34,8 @@
 //++
 
 /***************************************
-  TASKBOARD
-***************************************/
+ TASKBOARD
+ ***************************************/
 
 RB.Taskboard = (function ($) {
   return RB.Object.create(RB.Model, {
@@ -55,6 +55,9 @@ RB.Taskboard = (function ($) {
       this.loadColWidthPreference();
       this.updateColWidths();
 
+      // Initialize column header scroll spy
+      this.initializeScrollSpy();
+
       $("#col_width input").keyup(function (e) {
         if (e.which === 13) {
           self.updateColWidths();
@@ -68,16 +71,31 @@ RB.Taskboard = (function ($) {
       this.initializeSortables();
     },
 
-    initializeNewButtons : function () {
+    initializeScrollSpy: function () {
+      var header = this.$.find('#board_header');
+      header.scrollspy({
+        min: header.offset().top,
+        onEnter: function (element, position) {
+          header.css({height: header.height() + 'px'});
+          header.addClass('fixed');
+        },
+        onLeave: function (element, position) {
+          header.removeClass('fixed');
+          header.css({height: ''});
+        }
+      });
+    },
+
+    initializeNewButtons: function () {
       this.$.find('#tasks .add_new.clickable').click(this.handleAddNewTaskClick);
       this.$.find('#impediments .add_new.clickable').click(this.handleAddNewImpedimentClick);
     },
 
-    initializeSortables : function () {
+    initializeSortables: function () {
       this.$.find('#impediments .list').sortable({
         placeholder: 'placeholder',
-        start:  this.dragStart,
-        stop:   this.dragStop,
+        start: this.dragStart,
+        stop: this.dragStop,
         update: this.dragComplete,
         cancel: '.prevent_edit'
       }).sortable('option', 'connectWith', '#impediments .list');
@@ -90,8 +108,8 @@ RB.Taskboard = (function ($) {
       augmentList = function () {
         $(list.splice(0, 50)).sortable({
           placeholder: 'placeholder',
-          start:  self.dragStart,
-          stop:   self.dragStop,
+          start: self.dragStart,
+          stop: self.dragStop,
           update: self.dragComplete,
           cancel: '.prevent_edit'
         }).sortable('option', 'connectWith', '#tasks .list');
@@ -105,13 +123,13 @@ RB.Taskboard = (function ($) {
       augmentList();
     },
 
-    initializeTasks : function () {
+    initializeTasks: function () {
       this.$.find('.task').each(function (index) {
         RB.Factory.initialize(RB.Task, this);
       });
     },
 
-    initializeImpediments : function () {
+    initializeImpediments: function () {
       this.$.find('.impediment').each(function (index) {
         RB.Factory.initialize(RB.Impediment, this);
       });
