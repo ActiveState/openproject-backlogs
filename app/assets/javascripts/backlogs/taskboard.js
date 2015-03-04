@@ -55,8 +55,8 @@ RB.Taskboard = (function ($) {
       this.loadColWidthPreference();
       this.updateColWidths();
 
-      // Initialize column header scroll spy
-      this.initializeScrollSpy();
+      // Initialize column header sticky
+      this.initializeSticky();
 
       $("#col_width input").keyup(function (e) {
         if (e.which === 13) {
@@ -71,19 +71,8 @@ RB.Taskboard = (function ($) {
       this.initializeSortables();
     },
 
-    initializeScrollSpy: function () {
-      var header = this.$.find('#board_header');
-      header.scrollspy({
-        min: header.offset().top,
-        onEnter: function (element, position) {
-          header.css({height: header.height() + 'px'});
-          header.addClass('fixed');
-        },
-        onLeave: function (element, position) {
-          header.removeClass('fixed');
-          header.css({height: ''});
-        }
-      });
+    initializeSticky: function() {
+      $("#board_header").sticky({topSpacing:0});
     },
 
     initializeNewButtons: function () {

@@ -38,7 +38,7 @@
 //= require backlogs/jquery.flot/excanvas
 //= require backlogs/jquery.jeditable.mini
 //= require backlogs/jquery.cookie
-//= require backlogs/jquery-scrollspy
+//= require backlogs/jquery.sticky
 //= require backlogs/livepipe-ui/livepipe
 //= require backlogs/livepipe-ui/window
 //= require backlogs/common
