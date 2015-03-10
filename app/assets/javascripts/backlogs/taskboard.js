@@ -58,6 +58,8 @@ RB.Taskboard = (function ($) {
       // Initialize column header sticky
       this.initializeSticky();
 
+      this.initializeFilter();
+
       $("#col_width input").keyup(function (e) {
         if (e.which === 13) {
           self.updateColWidths();
@@ -69,6 +71,90 @@ RB.Taskboard = (function ($) {
 
       this.initializeNewButtons();
       this.initializeSortables();
+    },
+
+    // When search term is found in a story, all of the story's work
+    // packages are displayed. When search term is found in a work
+    // package, the matching work package and the story it belongs
+    // to are displayed
+    initializeFilter: function() {
+      $('#search_all').keyup(function () {
+        var impedimentStories = document.getElementById('impediments').rows;
+        var taskStories = document.getElementById('tasks').rows;
+        var workPackages = document.getElementsByClassName('work_package');
+        var term = this.value.toLowerCase();
+
+        if (term != '') {
+          var storiesToDisplay = [];
+          var visibleStories = [];
+
+          for (var i = 0; i < impedimentStories.length; i++) {
+            var subject = impedimentStories[i].cells[0].innerHTML.toLowerCase().indexOf(term);
+
+            if (subject > -1) {
+              impedimentStories[i].style.display = 'block';
+              visibleStories.push(impedimentStories[i]);
+            } else {
+              impedimentStories[i].style.display = 'none';
+            }
+          }
+
+          for (var i = 0; i < taskStories.length; i++) {
+            var story = taskStories[i].getElementsByClassName('story')[0];
+            var storyBar = story.getElementsByClassName('story-bar')[0];
+            var storyStatus = storyBar.getElementsByClassName('status')[0].innerHTML.trim().toLowerCase().indexOf(term);
+            var storyId = storyBar.getElementsByClassName('id')[0].getElementsByTagName('a')[0].innerHTML.trim().toLowerCase().indexOf(term);
+            var storySubject = story.getElementsByClassName('subject')[0].innerHTML.trim().toLowerCase().indexOf(term);
+            var storyAssignee = story.getElementsByClassName('assigned_to_id')[0];
+
+            if (storyAssignee.getElementsByTagName('a')[0]) {
+              storyAssignee = storyAssignee.getElementsByTagName('a')[0].innerHTML.trim().toLowerCase().indexOf(term);
+            } else {
+              storyAssignee = -1;
+            }
+            
+            if (storyStatus > -1 || storyId > -1 || storySubject > -1 || storyAssignee > -1) {
+              taskStories[i].style.display = 'block';
+              visibleStories.push(taskStories[i]);
+            } else {
+              taskStories[i].style.display = 'none';
+            }
+          }
+
+          for (var i = 0; i < workPackages.length; i++) {
+            var visibility = 'none';
+            var workPackageId = workPackages[i].getElementsByClassName('id')[0].getElementsByClassName('v')[0].innerHTML.toLowerCase().indexOf(term);
+            var workPackageSubject = workPackages[i].getElementsByClassName('subject')[0].innerHTML.toLowerCase().indexOf(term);
+            var workPackageAssignee = workPackages[i].getElementsByClassName('assigned_to_id')[0].getElementsByClassName('t')[0].innerHTML.toLowerCase().indexOf(term);
+            var parentRow = workPackages[i].closest('tr');
+
+            if (workPackageId > -1 || workPackageSubject > -1 || workPackageAssignee > -1 || $.inArray(parentRow, visibleStories) > -1) {
+              visibility = 'block';
+              if ($.inArray(parentRow, storiesToDisplay) == -1) {
+                storiesToDisplay.push(parentRow);
+              }
+            }
+
+            workPackages[i].style.display = visibility;
+          }
+
+          for (var i = 0; i < storiesToDisplay.length; i++) {
+            storiesToDisplay[i].style.display = 'block';
+          }
+        } else {
+          for (var i = 0; i < workPackages.length; i++) {
+            workPackages[i].style.display = 'block';
+          }
+
+          for (var i = 0; i < impedimentStories.length; i++) {
+            impedimentStories[i].style.display = 'block';
+          }
+
+          for (var i = 0; i < taskStories.length; i ++) {
+            taskStories[i].style.display = 'block';
+          }
+        }
+      });
     },
 
     initializeSticky: function() {
