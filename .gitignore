@@ -1,3 +1,6 @@
+# RubyMine files
+.idea/
+
 # Ignore any accidental remnants from gh-pages branch
 _site
 _posts
@@ -5,6 +8,3 @@ assets/styles
 graph.dot
 *.swp
 node_modules
-
-# JetBrains ignore
-.idea

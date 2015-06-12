@@ -33,23 +33,19 @@
 // See doc/COPYRIGHT.rdoc for more details.
 //++
 
-//= require backlogs/jquery.flot/jquery.flot
-//= require backlogs/jquery.flot/excanvas
-//= require backlogs/jquery.jeditable.mini
-//= require backlogs/jquery.cookie
-//= require backlogs/jquery.sticky
-//= require backlogs/livepipe-ui/livepipe
-//= require backlogs/livepipe-ui/window
-//= require backlogs/common
-//= require backlogs/master_backlog
-//= require backlogs/backlog
-//= require backlogs/burndown
-//= require backlogs/model
-//= require backlogs/editable_inplace
-//= require backlogs/sprint
-//= require backlogs/work_package
-//= require backlogs/story
-//= require backlogs/task
-//= require backlogs/impediment
-//= require backlogs/taskboard
-//= require backlogs/show_main
+// standard locales
+I18n.addTranslations('en', require('../../config/locales/js-en.yml').en);
+I18n.addTranslations('de', require('../../config/locales/js-de.yml').de);
+
+// main app
+var openprojectBacklogsApp = angular.module('openproject');
+
+openprojectBacklogsApp.run([ 'ConfigurationService',
+                         'WorkPackagesOverviewService',
+                         function(ConfigurationService, WorkPackagesOverviewService) {
+  if (ConfigurationService.isModuleEnabled('backlogs')) {
+    WorkPackagesOverviewService.addAttributesToGroup('estimatesAndTime', ['storyPoints', 'remainingTime']);
+  }
+}]);
+
+require('jquery-ui/ui/jquery-ui.js');

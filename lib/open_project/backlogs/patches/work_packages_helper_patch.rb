@@ -33,31 +33,47 @@
 # See doc/COPYRIGHT.rdoc for more details.
 #++
 
-require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
+module OpenProject::Backlogs::Patches::WorkPackagesHelperPatch
+  def self.included(base)
+    base.class_eval do
+      unloadable
 
-describe Backlog, :type => :model do
-  let(:project) { FactoryGirl.build(:project) }
+      def work_package_form_all_middle_attributes_with_backlogs(form, work_package, locals = {})
+        attributes = work_package_form_all_middle_attributes_without_backlogs(form, work_package, locals)
 
-  before(:each) do
-    @feature = FactoryGirl.create(:type_feature)
-    allow(Setting).to receive(:plugin_openproject_backlogs).and_return({ "story_types"           => [@feature.id.to_s],
-                                                                         "task_type"             => "0" })
-    @status = FactoryGirl.create(:status)
-  end
-
-  describe "Class Methods" do
-    describe '#owner_backlogs' do
-      describe "WITH one open version defined in the project" do
-        before(:each) do
-          @project = project
-          @work_packages = [FactoryGirl.create(:work_package, :subject => "work_package1", :project => @project, :type => @feature, :status => @status)]
-          @version = FactoryGirl.create(:version, :project => project, :fixed_issues => @work_packages)
-          @version_settings = @version.version_settings.create(:display => VersionSetting::DISPLAY_RIGHT, :project => project)
+        if work_package.backlogs_enabled?
+          attributes << work_package_form_remaining_hours_attribute(form, work_package, locals)
+          attributes << work_package_form_story_points_attribute(form, work_package, locals)
         end
 
-        it { expect(Backlog.owner_backlogs(@project)[0]).to be_owner_backlog }
+        attributes.compact
       end
+
+      def work_package_form_remaining_hours_attribute(form, work_package, _)
+        field = work_package_form_field do
+          options = { placeholder: l(:label_hours) }
+          options[:disabled] = 'disabled' unless work_package.leaf?
+
+          form.text_field(:remaining_hours, options)
+        end
+
+        WorkPackagesHelper::WorkPackageAttribute.new(:remaining_hours, field)
+      end
+
+      def work_package_form_story_points_attribute(form, work_package, _)
+        return unless work_package.is_story?
+
+        field = work_package_form_field do
+          form.text_field(:story_points)
+        end
+
+        WorkPackagesHelper::WorkPackageAttribute.new(:story_points, field)
+      end
+
+      alias_method_chain :work_package_form_all_middle_attributes, :backlogs
     end
   end
 
 end
+
+WorkPackagesHelper.send(:include, OpenProject::Backlogs::Patches::WorkPackagesHelperPatch)
