@@ -44,6 +44,9 @@ See doc/COPYRIGHT.rdoc for more details.
 <% end %>
 
 <%= toolbar title: h(@sprint.name) do %>
+  <li class="toolbar-item">
+    <input type="text" id="search_all" placeholder="Search">
+  </li>
   <% if @sprint.has_burndown? %>
     <li class="toolbar-item">
       <label for="col_width_input"><%= l('backlogs.column_width') %></label>
@@ -61,7 +64,6 @@ See doc/COPYRIGHT.rdoc for more details.
 
 <div id='rb'>
   <div id="taskboard">
-    <input type="text" id="search_all" placeholder="Search">
     <table id="board_header" cellspacing="0">
       <tr>
         <td><%= l(:backlogs_story) %></td>
