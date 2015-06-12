@@ -158,7 +158,7 @@ RB.Taskboard = (function ($) {
     },
 
     initializeSticky: function() {
-      $("#board_header").sticky({topSpacing:0});
+      $("#board_header").sticky({getWidthFrom:"#impediements"});
     },
 
     initializeNewButtons: function () {
